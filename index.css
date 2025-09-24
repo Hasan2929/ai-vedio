@@ -19,14 +19,23 @@ body {
   color: var(--text-color);
   line-height: 1.6;
   overscroll-behavior: none;
-}
-
-#root {
   display: flex;
   justify-content: center;
   align-items: flex-start;
   padding: 2rem 1rem;
   min-height: 100vh;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
 }
 
 .app-container {
@@ -87,10 +96,6 @@ header h1 {
 .image-uploader:hover {
   border-color: var(--primary-color);
   background-color: rgba(137, 180, 253, 0.05);
-}
-
-.image-uploader input[type="file"] {
-  display: none;
 }
 
 .image-uploader .upload-placeholder {
@@ -219,7 +224,7 @@ header h1 {
 
 @keyframes spin {
   to {
-    transform: rotate(30deg);
+    transform: rotate(360deg);
   }
 }
 
