@@ -12,7 +12,7 @@ const App = () => {
   const [imageBase64, setImageBase64] = useState<string | null>(null);
   const [generatedVideoUrl, setGeneratedVideoUrl] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [loadingMessage, setLoadingMessage] = useState('');
+  const [loadingMessage,setLoadingMessage] = useState('');
   const [error, setError] = useState<string | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -61,11 +61,18 @@ const App = () => {
       setError("Please provide an image.");
       return;
     }
-
+    
     setIsLoading(true);
     setError(null);
     setGeneratedVideoUrl(null);
-    
+
+    const apiKey = process.env.API_KEY;
+    if (!apiKey || apiKey.trim() === '') {
+      setError("مفتاح الـ API غير موجود أو فارغ. يرجى التأكد من إعداده بشكل صحيح في متغيرات البيئة الخاصة بـ Netlify ثم إعادة نشر الموقع بالكامل (Clear cache and deploy).");
+      setIsLoading(false);
+      return;
+    }
+
     let messageIndex = 0;
     setLoadingMessage(loadingMessages[messageIndex]);
     const messageInterval = setInterval(() => {
@@ -74,7 +81,7 @@ const App = () => {
     }, 5000);
 
     try {
-      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY! });
+      const ai = new GoogleGenAI({ apiKey: apiKey });
       const hardcodedPrompt = "Animate this image subtly. The camera must remain completely still, with no zoom, pan, or tilt. Create gentle, natural motion only within the scene itself, creating a cinemagraph effect.";
       
       let operation = await ai.models.generateVideos({
@@ -96,7 +103,7 @@ const App = () => {
 
       const downloadLink = operation.response?.generatedVideos?.[0]?.video?.uri;
       if (downloadLink) {
-        const videoResponse = await fetch(`${downloadLink}&key=${process.env.API_KEY}`);
+        const videoResponse = await fetch(`${downloadLink}&key=${apiKey}`);
         if (!videoResponse.ok) {
             throw new Error(`Failed to download video: ${videoResponse.statusText}`);
         }
@@ -108,7 +115,11 @@ const App = () => {
       }
 
     } catch (err: any) {
-      setError(err.message || "An unexpected error occurred.");
+      let errorMessage = err.message || "An unexpected error occurred.";
+      if (typeof errorMessage === 'string' && (errorMessage.includes('API key not valid') || errorMessage.includes('API_KEY_INVALID'))) {
+          errorMessage = "مفتاح الـ API غير صالح. يرجى الذهاب إلى Google AI Studio لإنشاء مفتاح جديد، ثم تحديثه في إعدادات Netlify وإعادة نشر الموقع.";
+      }
+      setError(errorMessage);
     } finally {
       setIsLoading(false);
       clearInterval(messageInterval);
@@ -129,7 +140,7 @@ const App = () => {
             <img src={`data:${imageFile?.type};base64,${imageBase64}`} alt="Preview" className="image-preview" />
             <div className="image-controls">
                 <button onClick={removeImage} aria-label="Remove image">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="24" height="24"><path d="M7 19q-.825 0-1.412-.587Q5 17.825 5 17V6h-.5q-.2 0-.35-.15t-.15-.35q0-.2.15-.35t.35-.15H8.5q0-.675.463-1.137Q9.425 3 10.1 3h3.8q.675 0 1.138.463Q15.5 3.825 15.5 4.5H19q.2 0 .35.15t.15.35q0 .2-.15.35t-.35.15H19v11q0 .825-.587 1.413Q17.825 19 17 19Zm10-13H7v11h10Z"></path></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="24" height="24"><path d="M7 19q-.825 0-1.412-.587Q5 17.825 5 17V6h-.5q-.2 0-.35-.15t-.15-.35q0-.2.15-.35t.35-.15H8.5q0-.675.463-1.137Q9.425 3 10.1 3h3.8q.675 0 1.138.463Q15.5 3.825 15.5 4.5H19q.2 0 .35.15t.15.35q0 .2-.15.35t-.35-.15H19v11q0 .825-.587 1.413Q17.825 19 17 19Zm10-13H7v11h10Z"></path></svg>
                 </button>
             </div>
         </div>
