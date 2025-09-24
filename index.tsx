@@ -66,7 +66,7 @@ const App = () => {
     setError(null);
     setGeneratedVideoUrl(null);
 
-    const apiKey = process.env.API_KEY;
+    const apiKey = import.meta.env.VITE_GOOGLE_API_KEY;
     if (!apiKey || apiKey.trim() === '') {
       setError("مفتاح الـ API غير موجود أو فارغ. يرجى التأكد من إعداده بشكل صحيح في متغيرات البيئة الخاصة بـ Netlify ثم إعادة نشر الموقع بالكامل (Clear cache and deploy).");
       setIsLoading(false);
